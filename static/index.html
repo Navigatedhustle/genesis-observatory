@@ -1,0 +1,120 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Genesis · Watch & understand</title>
+  <link rel="stylesheet" href="/static/style.css">
+  <link rel="stylesheet" href="/static/understanding.css">
+  <link rel="stylesheet" href="/static/god.css">
+</head>
+<body>
+<header>
+  <div class="brand"><span class="mark">G</span><div><b>GENESIS</b><small>Watch. Measure. Ask.</small></div></div>
+  <div class="header-center"><span class="dot"></span><span id="connection">Connecting</span><span id="clock">step —</span></div>
+  <div class="view-switch"><button id="god-toggle" aria-expanded="false" aria-controls="god-panel">✦ Talk to God</button><button id="guide-toggle" aria-expanded="true" aria-controls="world-guide">What am I seeing?</button><button id="advanced-toggle" aria-expanded="false" aria-controls="advanced-panel">Controls & experiments</button><button id="presentation">Focus view</button></div>
+</header>
+<main>
+  <aside class="left" id="advanced-panel" hidden>
+    <div class="panel-heading"><h2>Controls & experiments</h2><button id="close-advanced" aria-label="Close advanced controls">×</button></div>
+    <p class="hint">You can watch and talk without changing anything. These controls change the world or run comparisons.</p>
+    <div class="view-switch"><button id="operator" class="active">Your full view</button><button id="inhabitant">Investigator’s view</button><button id="matrix">Matrix View</button></div>
+    <div id="operator-tools">
+      <details open><summary>Save, rewind & compare</summary><p class="hint">Save a moment, then make two independent copies to compare what happens under different rules. Rewind also restores the saved investigator memories.</p>
+        <button id="checkpoint" class="wide">Save this moment ＋</button><label>Saved moment<select id="saved"></select></label>
+        <div class="row"><button id="branch">Make two copies</button><button id="restore">Rewind to save</button></div>
+      </details>
+      <details><summary>Change the world’s rules</summary><p class="hint">Change just the highlighted region. A multiplier of 2 makes that effect twice as strong; 1 leaves it unchanged. Investigators must measure the effect themselves.</p>
+        <label>What changes?<select id="law"><option value="movement">Energy needed to move</option><option value="growth">How quickly food grows back</option><option value="discontinuity">Movement cost changes after a delay</option></select></label>
+        <div class="row"><label>How strong?<input id="factor" type="number" min="0.1" max="5" step="0.1" value="2.5"></label><label>Wait this many steps<input id="delay" type="number" min="0" max="1000" value="0"></label></div>
+        <label>Region corners · x, y, x, y<input id="region" value="9,9,18,18"></label><button id="apply" class="accent wide">Apply change ↗</button>
+      </details>
+      <details><summary>Introduce another investigator</summary><p class="hint">A new investigator arrives with separate memories. NGI means a newcomer using a different local model family; it does not mean a new type of consciousness.</p>
+        <label>Name<input id="arrival-name" value="Newcomer" maxlength="40"></label>
+        <label>Model family<select id="arrival-route"><option value="qwen">Qwen · different-family newcomer (NGI)</option><option value="llama">Llama · same-family newcomer</option></select></label>
+        <div class="row"><label>Location · x, y<input id="arrival-position" value="13,12"></label><label>Arrival step · 0 = now<input id="arrival-tick" type="number" min="0" value="0"></label></div><button id="arrive" class="wide">Introduce investigator ＋</button>
+      </details>
+      <details><summary>Run recorded comparisons</summary><p class="hint">These experiments use separate worlds. Predictions are saved before measurements; an independent numerical check grades the answers. They may take several minutes.</p>
+        <button id="contact-protocol" class="wide">Compare first-contact groups →</button><p class="hint">Two agents, five group arrangements, two environments, three rounds.</p>
+        <button id="evaluate" class="wide">Test selected investigator across 6 worlds →</button><button id="replay" class="wide">Check that saved history replays exactly</button>
+        <a class="export" href="/api/export">Download all world & experiment records ↓</a>
+      </details>
+      <details><summary>Technical status & results</summary><div class="compute"><div class="panel-heading"><h3>Local inference</h3><span id="inference-status">IDLE</span></div><div id="compute-text"></div><div id="jobs"></div></div><p class="hint">Detailed results are below the activity log. Slow model responses do not slow or change the world’s rules.</p></details>
+    </div>
+    <div id="inhabitant-info" hidden><p class="hint">This view shows only the selected investigator’s own observations and records. The full map, hidden rules, model names, and other investigators’ memories are withheld.</p></div>
+  </aside>
+  <section class="center">
+    <div class="welcome"><div><span class="eyebrow">YOUR LIVING WORLD</span><h1>Watch a world find its balance.</h1><p>Dots live and evolve. Investigators measure and explain. One “step” is one turn of the world.</p></div></div>
+    <section class="world-guide" id="world-guide" aria-label="How to read the world">
+      <div><span class="guide-icon creature-icon">●</span><h3>Little dots = organisms</h3><p>They spend energy moving, eat nearby food, reproduce, and die. Their inherited controllers evolve. Dimmer dots have less energy. They don’t talk.</p></div>
+      <div><span class="guide-icon food-icon">▦</span><h3>Green ground = food</h3><p>Brighter patches contain more food. Food is finite and grows back. Organisms compete for what is nearby.</p></div>
+      <div><span class="guide-icon researcher-icon">M</span><h3>Names = AI investigators</h3><p>Mira and the others measure the world with local probes. Their beliefs can be wrong. Click a name to follow its evidence.</p></div>
+    </section>
+    <div class="watch-controls" id="watch-controls">
+      <label class="world-picker">World<select id="world" aria-label="Choose world"></select></label>
+      <button id="pause" title="Freezes world steps. A model request already running can still finish.">Pause world</button>
+      <select id="speed" aria-label="World speed"><option value="1">Slow · 2 steps / second</option><option value="10">Normal · 20 steps / second</option><option value="30">Fast · 60 steps / second</option><option value="100">Very fast · 200 steps / second</option></select>
+      <button id="autonomy" title="Investigators start a bounded investigation about once a minute. This is separate from world stepping.">Auto investigation</button>
+    </div>
+    <div id="stats" class="stats"></div>
+    <div class="watch-stage">
+    <div class="world-card">
+      <div class="world-heading"><div><span class="eyebrow">OBSERVE</span><h2 id="world-title">The living world</h2></div><div class="world-actions"><button id="compare">Compare saved copies</button><button id="zoomout" aria-label="Zoom out">−</button><button id="zoomin" aria-label="Zoom in">＋</button><button id="resetzoom">Reset zoom</button></div></div>
+      <div id="canvas-wrap"><canvas id="habitat" aria-label="Living organisms and named investigator probes. Click a dot to learn about it."></canvas>
+        <div class="map-caption"><span><i class="organism-key"></i> Dots: organisms</span><span><i class="resource-key"></i> Green: food</span><span><i class="probe-key"></i> Named rings: investigators</span><span>Click a dot or a name to learn more</span></div>
+      </div>
+      <div id="compare-wrap" hidden><div class="comparison"><div><h3 id="compare-a-title">Copy A</h3><canvas id="branch-a"></canvas><div id="compare-a-metrics"></div></div><div><h3 id="compare-b-title">Copy B</h3><canvas id="branch-b"></canvas><div id="compare-b-metrics"></div></div></div><p class="hint" id="lineage-info"></p></div>
+      <div id="perception" hidden></div>
+      <div id="substrate" hidden><div class="panel-heading"><h3>Actual computational state · your view only</h3><span>STATE, NOT THOUGHTS</span></div><div id="substrate-data"></div><p class="hint">Green glyph rain is decoration. Values below are real recorded state and events.</p></div>
+      <div class="world-bottom"><span id="selection">Click a little dot to see its age, energy, and inherited behaviour.</span><span id="world-law">No rule changes</span></div>
+    </div>
+    <div class="lower-grid">
+      <section class="panel activity-panel" id="activity-panel">
+        <div class="panel-heading"><div><span class="eyebrow">PLAIN-LANGUAGE JOURNAL</span><h2>What is happening?</h2></div><button id="hold-log" aria-pressed="false">Hold log still</button></div>
+        <p class="log-explainer">Measurements are facts from instruments. Beliefs are what an investigator says; they can be wrong.</p>
+        <div class="log-controls"><select id="log-filter" aria-label="Filter activity"><option value="all">Everything in this world</option><option value="ecology">Organisms & food</option><option value="investigators">All investigators</option><option value="selected">Selected investigator</option><option value="changes">Your changes & arrivals</option><option value="god">God’s changes & observations</option></select><label><input id="show-beliefs" type="checkbox" checked> Include beliefs</label><span id="log-status"></span></div>
+        <div id="ecology-summary" class="ecology-summary"></div><div id="feed" class="feed" role="log" aria-label="Actual world activity"></div>
+        <p class="hint">Newest first. Wording is translated from saved records and measured counters, without extra AI narration. Each entry can show its source.</p>
+      </section>
+      <details class="panel trend-panel"><summary>See population & food over time</summary><span id="generation"></span><canvas id="chart" aria-label="Population and food coverage history"></canvas><div class="chart-legend"><span class="cyan">Population</span><span class="amber">Food coverage</span></div><div id="ecology-results" class="hint"></div></details>
+    </div>
+    </div>
+    <details class="science-details" id="science-details"><summary>Recorded experiment results</summary>
+      <div class="panel evaluation"><div class="panel-heading"><h3>Paired hidden-rule investigation</h3><span>INDEPENDENT CHECK</span></div><div id="eval-results" class="hint">No completed comparison yet.</div></div>
+      <div class="panel evaluation" id="contact-results-panel"><div class="panel-heading"><h3>First-contact group comparisons</h3><span>FIXED CRITERIA</span></div><div id="contact-results" class="hint">No completed contact comparison yet.</div></div>
+    </details>
+  </section>
+  <aside class="right">
+    <section id="god-panel" hidden aria-label="God world steward">
+      <div class="god-heading"><div><span class="eyebrow">YOUR WORLD STEWARD</span><h2>Talk to God <span>✦</span></h2></div><button id="god-back">Investigators →</button></div>
+      <p class="god-intro">A powerful local AI that watches the whole world and can try small changes. “God” is its nickname. The beings still act for themselves.</p>
+      <div class="god-status"><b id="god-status">Connecting</b><p id="god-runtime"></p><p id="god-work" role="status"></p></div>
+      <div class="section-title"><h2>Ask or suggest a change</h2></div>
+      <div class="question-chips"><button data-god-question="Explain the most recent change and the measured results in simple language. Did it help, harm, or make no clear difference?" data-change="false">Did it help?</button><button data-god-question="What have Mira and the other investigators actually measured since the last change? Separate their beliefs from evidence." data-change="false">How did they react?</button><button data-god-question="Try slightly faster food growth in a small patch near Mira. Predict the outcome first. If a change is already active, explain it and wait." data-change="true">Try more food near Mira</button></div>
+      <div class="god-chat" id="god-chat" role="log" aria-label="Your conversation with God"></div>
+      <form id="god-chat-form"><label class="sr-only" for="god-message">Message to God</label><textarea id="god-message" placeholder="Why is the population changing? What if we…" rows="3" maxlength="2000" required></textarea><label class="god-permission"><input id="god-allow" type="checkbox"> Allow one bounded change with this message</label><div class="send-row"><span>Unchecked = answer only.<br>The world continues while God responds.</span><button type="submit" class="god-send">Ask God →</button></div></form>
+      <div class="god-auto-card"><div class="panel-heading"><h3>Let God experiment</h3><button id="god-auto" aria-pressed="false">Automatic: off</button></div><p class="hint" id="god-auto-info"></p>
+        <label>Time between decisions<select id="god-interval"><option value="60">1 minute</option><option value="180">3 minutes</option><option value="300">5 minutes</option><option value="600">10 minutes</option></select></label>
+        <button id="god-act" class="wide">Choose one gentle change now</button>
+        <details><summary>What may God change?</summary><p class="hint">Food regrowth or movement cost between half and twice the current rate, in at most a quarter of the world. A rule lasts 100–2,000 steps. It can also add or remove up to 30% of a patch’s food capacity once. It cannot rewrite organisms or give investigators hidden answers.</p><label>Goal<textarea id="god-policy" rows="3" maxlength="800"></textarea></label><button id="god-save-policy">Save goal</button></details>
+      </div>
+      <section class="god-outcome"><span class="eyebrow">MEASURED, NOT NARRATED</span><h3>What happened after the change?</h3><div id="god-results"></div><div id="god-reactions"></div></section>
+      <details class="god-details"><summary>Evidence, predictions & original records</summary><div id="god-records"></div><a id="god-export" class="export">Download this world’s God experiments ↓</a></details>
+      <p class="footer-note">A 100-step test compares the changed world with an unchanged copy. Short-term survival and energy are measurable; intelligence, consciousness, and lasting evolutionary progress are not established.</p>
+    </section>
+    <div class="section-title"><h2>Meet the investigators</h2><span class="badge">LOCAL AI</span></div><p class="side-intro">Choose a name to follow its measurements and ask questions.</p><div class="investigators"></div>
+    <section class="panel observer-card" id="observer-card"><div class="panel-heading"><h2 id="observer-name">Mira</h2><span id="observer-status">Waiting</span></div><p id="observer-role"></p><div id="observer-now"></div><div id="observer-last"></div><p class="hint" id="observer-age"></p></section>
+    <details class="panel belief"><summary id="belief-heading">What Mira believes</summary><span id="confidence"></span><div id="belief-text"></div><div id="falsifier" class="hint"></div><div id="next-plan" class="hint"></div><p class="hint">A model’s confidence is its own estimate, not an independently verified probability.</p><button id="investigate" class="wide">Ask for a real measurement ↗</button></details>
+    <div class="section-title"><h2 id="chat-title">Talk to Mira</h2></div>
+    <div class="question-chips"><button data-question="Explain your last actual measurement in simple everyday language. What did your instrument show, and what does it not establish?">Explain your measurement</button><button data-question="What evidence would change your mind? Please answer briefly in plain language.">What would change your mind?</button><button data-question="What experiment would you try next and why? Please answer briefly in plain language.">What will you test next?</button></div>
+    <p class="hint">Recent public replies, including automatic investigation requests. Select a question or type your own.</p><div class="chat" id="chat"></div><form id="chat-form"><label class="sr-only" for="message">Message to the selected investigator</label><textarea id="message" placeholder="Ask Mira a question…" rows="3" maxlength="2000" required></textarea><div class="send-row"><span>Your words are testimony, not measurements.</span><button type="submit" class="accent">Send →</button></div></form>
+    <details id="exchange-panel"><summary>Help two investigators share evidence</summary><p class="hint">You compose the message. A real measurement from the selected sender is attached separately. Only nearby investigators can receive it.</p><label>Send to<select id="recipient"></select></label><label>Message<input id="exchange-text" value="Here is my latest measured evidence."></label><button id="exchange" class="wide">Share actual measurement →</button></details>
+    <details class="panel record-details"><summary>Selected investigator’s predictions & results</summary><div id="measurements" class="measurements"></div></details>
+    <details class="panel contact-map"><summary>Who has communicated with whom?</summary><svg id="contact-map" viewBox="0 0 280 120" role="img" aria-label="Actual communication between investigators"></svg><div id="contact-map-caption" class="hint"></div></details>
+    <p class="footer-note">Organisms evolve; language models interpret observations. These are separate processes. No claim of consciousness is being made.</p>
+  </aside>
+</main>
+<dialog id="inspector"><div class="panel-heading"><h2 id="inspector-title">Learn about this inhabitant</h2><button id="close-inspector">Close ×</button></div><div id="inspector-summary"></div><details class="raw-details"><summary>See the original technical record</summary><pre id="inspector-data"></pre></details></dialog>
+<div id="toast" role="status"></div>
+<script src="/static/app.js"></script><script src="/static/understanding.js"></script><script src="/static/god.js"></script>
+</body>
+</html>
